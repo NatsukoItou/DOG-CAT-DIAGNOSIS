@@ -72,12 +72,18 @@ const Quiz = () => {
     resetDiagnosis, // 診断リセット処理
   } = useDiagnosis();
 
-  // 診断が終了したら結果画面へ遷移し、状態リセット
-  if (isFinished && result) {
-    navigate("/result", { state: { result } });
-    resetDiagnosis();
-    return null;
-  }
+  // 選択肢ボタンのクリック時の処理をラップ
+  const handleAnswerAndNavigate = (type) => {
+    handleAnswer(type);
+    // 5問目回答時はresultがまだセットされていないので、setTimeoutで遷移を遅延
+    if (currentQuestionIndex + 1 === totalQuestions) {
+      setTimeout(() => {
+        if (result) {
+          navigate("/result", { state: { result } });
+        }
+      }, 100);
+    }
+  };
 
   // 進捗バー用の進捗率計算
   const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100;
@@ -103,7 +109,10 @@ const Quiz = () => {
 
         {/* 選択肢ボタン。クリックで回答処理 */}
         {currentQuestion.answers.map((answer, index) => (
-          <OptionButton key={index} onClick={() => handleAnswer(answer.type)}>
+          <OptionButton
+            key={index}
+            onClick={() => handleAnswerAndNavigate(answer.type)}
+          >
             {answer.label}
           </OptionButton>
         ))}
